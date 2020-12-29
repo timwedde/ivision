@@ -1,0 +1,70 @@
+version: 2.1
+
+commands:
+  build-and-test:
+    description: "Install, build and test the library"
+    steps:
+      - run:
+          name: "Install into environment"
+          command: |
+            poetry install
+      - run:
+          name: "Lint library and tests"
+          command: |
+            poetry run flake8 ivision
+
+jobs:
+  test-39:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - build-and-test
+  test-38:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - build-and-test
+
+  deploy:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run:
+          name: Publish
+          command: |
+            poetry publish --build --username "${PYPI_USERNAME}" --password "${PYPI_PASSWORD}" --no-interaction
+
+workflows:
+    version: 2
+
+    test-workflow:
+      jobs:
+        - test-39
+        - test-38
+
+    deploy-workflow:
+      jobs:
+        - test-39:
+            filters:
+              tags:
+                only: /v[0-9]+(\.[0-9]+)*/
+              branches:
+                ignore: /.*/
+        - test-38:
+            filters:
+              tags:
+                only: /v[0-9]+(\.[0-9]+)*/
+              branches:
+                ignore: /.*/
+        - deploy:
+            requires:
+              - test-39
+              - test-38
+            filters:
+              tags:
+                only: /v[0-9]+(\.[0-9]+)*/
+              branches:
+                ignore: /.*/
