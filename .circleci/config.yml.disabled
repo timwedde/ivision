@@ -15,16 +15,12 @@ commands:
 
 jobs:
   test-39:
-    macos:
-      xcode: 12.3
     docker:
       - image: circleci/python:3.9
     steps:
       - checkout
       - build-and-test
   test-38:
-    macos:
-      xcode: 12.3
     docker:
       - image: circleci/python:3.8
     steps:
@@ -32,8 +28,6 @@ jobs:
       - build-and-test
 
   deploy:
-    macos:
-      xcode: 12.3
     docker:
       - image: circleci/python:3.8
     steps:
